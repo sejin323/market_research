@@ -100,7 +100,7 @@ export async function analyzeWithClaude(
     ? papersResult.papers.map((p, i) => `[P${i + 1}] ${p.title}\n${p.url}`).join('\n\n')
     : '(논문 출처 없음)';
 
-  const response = await withRetry(() => anthropic.messages.create({
+  const response = await withRetry(() => anthropic.beta.promptCaching.messages.create({
     model:      'claude-sonnet-4-6',
     max_tokens: 8192,
     system: [
