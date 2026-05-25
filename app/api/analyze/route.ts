@@ -6,8 +6,7 @@ import { getNaverTrends } from '@/lib/naver-datalab';
 import { analyzeWithClaude } from '@/lib/claude';
 import type { ProgressEvent } from '@/lib/types';
 
-// Vercel Pro: 60초, Hobby: 10초 (분석이 오래 걸리면 Pro 플랜 필요)
-export const maxDuration = 60;
+export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
