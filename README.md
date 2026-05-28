@@ -6,6 +6,30 @@
 
 ---
 
+## 🗺 시스템 구조
+
+![시스템 설계도](docs/system-design.svg)
+
+> **① 입력** → **② 병렬 데이터 수집** → **③ Claude AI 분석** → **④ 리포트 5개 섹션** → **⑤ 저장·공유**
+>
+> - 키워드를 입력하면 뉴스(Tavily), 학술 논문(Semantic Scholar), 국내 검색 트렌드(네이버 데이터랩)를 **동시에** 수집해 속도를 최적화합니다.
+> - 수집된 데이터를 Claude Sonnet이 분석해 시장 규모·성장률·리스크 등 5개 섹션의 구조화된 리포트로 변환합니다.
+> - 결과는 Supabase에 7일간 캐싱되어 동일 키워드 재조회 시 API 비용 없이 즉시 반환하고, Notion으로 아카이빙할 수 있습니다.
+
+---
+
+## ✨ 주요 기능
+
+- **키워드 기반 자동 분석** — 키워드 입력 한 번으로 리포트 자동 생성
+- **3개 소스 병렬 수집** — 뉴스/기업 동향(Tavily), 학술 논문(Semantic Scholar), 국내 검색 트렌드(네이버 데이터랩)를 동시에 수집
+- **Claude AI 분석** — 시장 규모, 성장률, 성장 동인, 기업 동향, 리스크를 체계적으로 분석
+- **시각화 차트** — 시장 규모 추이, TAM/SAM/SOM, 기업 점유율, 키워드 검색량 차트 제공
+- **7일 캐시** — 동일 키워드는 Supabase에 캐싱하여 빠르게 재조회
+- **Notion 내보내기** — 생성된 리포트를 Notion 페이지로 바로 저장
+- **비밀번호 보호** — 미들웨어 기반 접근 제어
+
+---
+
 ## 📸 스크린샷
 
 ### 메인 화면
@@ -23,18 +47,6 @@
 ![리포트 결과 6](docs/screenshot-report6.png)
 ![리포트 결과 7](docs/screenshot-report7.png)
 ![리포트 결과 8](docs/screenshot-report8.png)
-
----
-
-## ✨ 주요 기능
-
-- **키워드 기반 자동 분석** — 키워드 입력 한 번으로 리포트 자동 생성
-- **3개 소스 병렬 수집** — 뉴스/기업 동향(Tavily), 학술 논문(Semantic Scholar), 국내 검색 트렌드(네이버 데이터랩)를 동시에 수집
-- **Claude AI 분석** — 시장 규모, 성장률, 성장 동인, 기업 동향, 리스크를 체계적으로 분석
-- **시각화 차트** — 시장 규모 추이, TAM/SAM/SOM, 기업 점유율, 키워드 검색량 차트 제공
-- **7일 캐시** — 동일 키워드는 Supabase에 캐싱하여 빠르게 재조회
-- **Notion 내보내기** — 생성된 리포트를 Notion 페이지로 바로 저장
-- **비밀번호 보호** — 미들웨어 기반 접근 제어
 
 ---
 
@@ -59,46 +71,26 @@
 market_research/
 ├── app/
 │   ├── api/
-│   │   ├── analyze/       # 핵심 분석 API (SSE 스트리밍)
-│   │   ├── report/[id]/   # 리포트 조회 API
-│   │   ├── auth/          # 인증 API
-│   │   ├── notion/        # Notion 내보내기 API
+│   │   ├── analyze/        # 핵심 분석 API (SSE 스트리밍)
+│   │   ├── report/[id]/    # 리포트 조회 API
+│   │   ├── auth/           # 인증 API
+│   │   ├── notion/         # Notion 내보내기 API
 │   │   ├── identify-topic/
 │   │   └── cache/
-│   ├── report/[id]/       # 리포트 결과 페이지
-│   ├── login/             # 로그인 페이지
-│   └── page.tsx           # 메인 검색 페이지
-├── components/            # UI 컴포넌트
+│   ├── report/[id]/        # 리포트 결과 페이지
+│   ├── login/              # 로그인 페이지
+│   └── page.tsx            # 메인 검색 페이지
+├── components/             # UI 컴포넌트
 ├── lib/
-│   ├── claude.ts          # Claude AI 분석
-│   ├── tavily.ts          # 뉴스 수집
+│   ├── claude.ts           # Claude AI 분석
+│   ├── tavily.ts           # 뉴스 수집
 │   ├── semantic-scholar.ts # 논문 수집
-│   ├── naver-datalab.ts   # 네이버 트렌드 수집
-│   ├── supabase.ts        # DB 캐시
-│   ├── notion.ts          # Notion 연동
-│   └── types.ts           # 공통 타입 정의
-└── middleware.ts           # 인증 미들웨어
-```
-
----
-
-## 🔄 분석 흐름
-
-```
-키워드 입력
-    ↓
-캐시 확인 (Supabase, 7일)
-    ↓ (캐시 없으면)
-병렬 데이터 수집
-├── Tavily       → 뉴스·기업 동향
-├── Semantic Scholar → 학술 논문
-└── 네이버 데이터랩  → 국내 검색량
-    ↓
-Claude AI 분석 (시장규모·성장률·리스크 등)
-    ↓
-Supabase 저장
-    ↓
-리포트 페이지 이동
+│   ├── naver-datalab.ts    # 네이버 트렌드 수집
+│   ├── supabase.ts         # DB 캐시
+│   ├── notion.ts           # Notion 연동
+│   └── types.ts            # 공통 타입 정의
+├── docs/                   # 스크린샷·설계도
+└── middleware.ts            # 인증 미들웨어
 ```
 
 ---
@@ -116,8 +108,8 @@ NAVER_CLIENT_ID=...
 NAVER_CLIENT_SECRET=...
 NEXT_PUBLIC_SUPABASE_URL=https://...supabase.co
 SUPABASE_SERVICE_KEY=...
-NOTION_TOKEN=...           # Notion 내보내기 사용 시
-NOTION_DATABASE_ID=...     # Notion 내보내기 사용 시
+NOTION_TOKEN=...            # Notion 내보내기 사용 시
+NOTION_DATABASE_ID=...      # Notion 내보내기 사용 시
 APP_PASSWORD=원하는비밀번호
 ```
 
