@@ -8,7 +8,7 @@
 
 ## 🗺 시스템 구조
 
-![시스템 설계도](docs/system-design.svg)
+![시스템 설계도](docs/market_research_full_workflow_v2.svg)
 
 > **① 입력** → **② 병렬 데이터 수집** → **③ Claude AI 분석** → **④ 리포트 5개 섹션** → **⑤ 저장·공유**
 >
